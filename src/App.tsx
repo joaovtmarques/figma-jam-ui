@@ -1,69 +1,82 @@
-import 
-ReactFlow, { 
-  Background, 
-  Controls, 
-  Node, 
-  ConnectionMode,
+import { useCallback } from 'react';
+import { zinc } from 'tailwindcss/colors'
+import * as Toolbar from '@radix-ui/react-toolbar';
+
+import ReactFlow, {
+  Controls,
+  Background,
+  useNodesState,
   useEdgesState,
-  Connection,
   addEdge,
-  useNodesState
-} from 'reactflow'
-import * as ToolBar from '@radix-ui/react-toolbar'
-import {useCallback} from 'react'
-import {zinc} from 'tailwindcss/colors'
+  Node,
+  Edge,
+  ConnectionMode,
+  Connection,
+} from 'reactflow';
 
-import 'reactflow/dist/style.css'
+import 'reactflow/dist/style.css';
+// import '@reactflow/node-resizer/dist/style.css';
 
-import { Square } from './components/nodes/Square'
-import { DefaultEdge } from './components/edges/DefaultEdge'
+import { Square } from './components/nodes/Square';
+import { DefaultEdge } from './components/edges/DefaultEdge';
+
+interface InitialNode extends Node {
+  type: keyof typeof NODE_TYPES
+}
+
+const initialNodes: InitialNode[] = [
+  { 
+    id: '1', 
+    position: { x: 200, y: 400 }, 
+    data: {},
+    type: 'square',
+  },
+  { 
+    id: '2', 
+    position: { x: 600, y: 400 }, 
+    data: {},
+    type: 'square',
+  },
+];
 
 const NODE_TYPES = {
-  square: Square
+  square: Square,
 }
 
 const EDGE_TYPES = {
-  default: DefaultEdge
+  default: DefaultEdge,
 }
 
-const INITIAL_NODES = [
-  {
-    id: crypto.randomUUID(),
-    type: 'square',
-    position: {
-      x: 200,
-      y: 400,
-    },
-    data: {}
-  },
-  {
-    id: crypto.randomUUID(),
-    type: 'square',
-    position: {
-      x: 600,
-      y: 400,
-    },
-    data: {}
-  },
-] satisfies Node[]
-
 export function App() {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const [edges, setEdges, onEdgesChange] = useEdgesState([])
-  const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES)
+  const onConnect = useCallback((params: Connection) => {
+    return setEdges((eds) => addEdge(params, eds))
+  }, [setEdges]);
 
-  const onConnect = useCallback((connection: Connection) => {
-    return setEdges(edges => addEdge(connection, edges))
-  }, [])
-  
+  function handleAddSquareNode() {
+    setNodes((nodes) => {
+      return [...nodes, {
+        id: crypto.randomUUID(),
+        position: {
+          x: 750,
+          y: 350,
+        },
+        data: {},
+        type: 'square',
+      }]
+    })
+  }
+
   return (
     <div className='h-screen w-screen'>
       <ReactFlow
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         nodes={nodes}
-        onNodesChange={onNodesChange}
         edges={edges}
+        onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         connectionMode={ConnectionMode.Loose}
@@ -71,14 +84,15 @@ export function App() {
           type: 'default'
         }}
       >
-        <Background
-          gap={12}
-          size={2}
-          color={zinc[200]}
-        />
-        <Controls />
+        <Controls /> 
+        <Background gap={12} size={2} color={zinc['200']} />
       </ReactFlow>
-      
+
+      <Toolbar.Root className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-lg border border-zinc-300 px-8 h-20 w-96 overflow-hidden">
+        <Toolbar.Button onClick={handleAddSquareNode} className="text-zinc-400">
+          <div className="w-32 h-32 bg-violet-500 mt-6 rounded hover:-translate-y-2 transition-transform"></div>
+        </Toolbar.Button>
+      </Toolbar.Root>
     </div>
-  )
+  );
 }
