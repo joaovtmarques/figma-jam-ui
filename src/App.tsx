@@ -15,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
-// import '@reactflow/node-resizer/dist/style.css';
+import '@reactflow/node-resizer/dist/style.css';
 
 import { Square } from './components/nodes/Square';
 import { DefaultEdge } from './components/edges/DefaultEdge';
